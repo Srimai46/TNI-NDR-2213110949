@@ -77,16 +77,31 @@ df["Date"] = pd.to_datetime(df["Date"], format="%m/%d/%Y", errors="coerce")
 df = df.dropna(subset=["Date"])
 
 st.sidebar.title("📅 เลือกช่วงเวลา")
-st.sidebar.markdown("🛈 เลือกจำนวนเดือนที่ต้องการดูแนวโน้มราคาย้อนหลัง")
+st.sidebar.markdown("🛈 เลือกช่วงเวลาที่ต้องการดูแนวโน้มราคาย้อนหลัง")
 
-months = st.sidebar.selectbox("ดูข้อมูลย้อนหลัง (เดือน):", [1, 2, 3, 4, 5, 6], index=0)
+# ตัวเลือกช่วงเวลา
+period_option = st.sidebar.selectbox(
+    "ดูข้อมูลย้อนหลัง:",
+    ["7 วัน", "1 เดือน", "2 เดือน", "3 เดือน", "4 เดือน", "5 เดือน", "6 เดือน"]
+)
 
+# คำนวณวันที่เริ่มต้น
 latest_date = df["Date"].max()
-start_date = latest_date - pd.DateOffset(months=months)
+if "วัน" in period_option:
+    days = int(period_option.split()[0])
+    start_date = latest_date - pd.DateOffset(days=days)
+    label = f"{days} วันล่าสุด"
+else:
+    months = int(period_option.split()[0])
+    start_date = latest_date - pd.DateOffset(months=months)
+    label = f"{months} เดือนล่าสุด"
+
+# กรองข้อมูลตามช่วงเวลา
 df_filtered = df[df["Date"] >= start_date].copy()
 df_filtered["Date"] = df_filtered["Date"].dt.date
 
-st.sidebar.markdown(f"### ข้อมูลย้อนหลัง **{months} เดือนล่าสุด**")
+# แสดงผลใน Sidebar
+st.sidebar.markdown(f"### ข้อมูลย้อนหลัง **{label}**")
 st.sidebar.markdown(f"({start_date.date()} - {latest_date.date()})")
 st.sidebar.markdown(f"📊 พบข้อมูลทั้งหมด: **{len(df_filtered)} แถว**")
 
@@ -96,7 +111,7 @@ st.sidebar.markdown("## 💼 สรุปข้อมูลราคาปิด
 price_stats = df_filtered["Price"].describe()
 
 st.sidebar.markdown(f"""
-- 📅 ข้อมูลย้อนหลัง: **{months} เดือน**  
+- 📅 ช่วงเวลา: **{label}**  
 - 📝 ราคาเฉลี่ย: **${price_stats['mean']:.2f}**
 - 📉 ราคาต่ำสุด: **${price_stats['min']:.2f}**
 - 📈 ราคาสูงสุด: **${price_stats['max']:.2f}**
@@ -193,7 +208,7 @@ with st.expander("🔍 คลิกเพื่อดูกราฟปริม
 
     # แสดงค่าบน bar
     for x, v in zip(df_sorted["Date"], volume_values):
-        ax1.text(x, v, f"{int(v):,}", fontsize=7, ha='center', va='bottom', rotation=90, color='black')
+        ax1.text(x, v, f"{v / 1_000_000:.1f}M", fontsize=7, ha='center', va='bottom', rotation=90, color='black')
 
     # Plot line ราคาปิด
     sns.lineplot(x=df_sorted["Date"], y=df_sorted["Price"], ax=ax2, color="#1f77b4", label="Price", linewidth=2)
