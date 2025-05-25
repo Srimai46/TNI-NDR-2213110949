@@ -1,4 +1,5 @@
 # slide : https://www.canva.com/design/DAGoSCXEQc4/e-IcPqrmpWwPmSsQ14pC3g/edit?utm_content=DAGoSCXEQc4&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton
+# Web : https://tni-ndr-2213110949-6jw8f9zolcagwgyaryuvuk.streamlit.app/
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -7,7 +8,7 @@ import matplotlib
 import seaborn as sns
 import matplotlib.dates as mdates
 import yfinance as yf
-
+import plotly.graph_objects as go
 # ---------------- Global Settings ----------------
 matplotlib.rcParams['font.family'] = 'DejaVu Sans'
 sns.set(style="whitegrid")
@@ -164,6 +165,37 @@ with col4:
         <p>ต่ำกว่าค่าเฉลี่ย {abs(min_change):.2f}%</p>
     </div>
     """, unsafe_allow_html=True)
+
+# ---------------- Candlestick Chart ----------------
+st.markdown("## 🔕️ กราฟ Candlestick ของราคาหุ้น")
+
+with st.expander("📌 คลิกเพื่อดูกราฟ Candlestick"):
+    # เตรียมข้อมูลสำหรับ Candlestick
+    candle_df = df_filtered.copy()
+    candle_df["Date"] = pd.to_datetime(candle_df["Date"])
+
+    # ใช้ go.Figure บริสทาศ Candlestick chart เพียงส่วนเดียวบนี้
+    fig_candle = go.Figure(data=[go.Candlestick(
+        x=candle_df["Date"],
+        open=candle_df["Open"],
+        high=candle_df["High"],
+        low=candle_df["Low"],
+        close=candle_df["Price"],
+        increasing_line_color='green',
+        decreasing_line_color='red',
+        name="O"
+    )])
+
+    fig_candle.update_layout(
+        title="Candlestick Chart - Realty Income (O)",
+        xaxis_title="Date",
+        yaxis_title="Price (USD)",
+        template="plotly_dark",
+        width=1000,
+        height=500
+    )
+
+    st.plotly_chart(fig_candle, use_container_width=True)
 
 # ---------------- Plot Price Trend with Linear Regression in Expander ----------------
 st.markdown("## 📊 แนวโน้มราคาหุ้น")
