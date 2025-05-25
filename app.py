@@ -70,7 +70,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ---------------- Load and Clean Data ----------------
-df = pd.read_excel(r"C:\\Users\\Gre4r\\Desktop\\TNI-NDR-2213110949\\Book1.xlsx", skiprows=1)
+df = pd.read_excel("Book1.xlsx", skiprows=1)
 df.columns = ["Date", "Price", "Open", "High", "Low", "Vol.", "Change%", "NYSE index"]
 df = df[~df["Date"].isna() & ~df["Date"].astype(str).str.contains("Date")]
 df["Date"] = pd.to_datetime(df["Date"], format="%m/%d/%Y", errors="coerce")
